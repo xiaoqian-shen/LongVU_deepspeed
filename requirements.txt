@@ -3,7 +3,7 @@ torch==2.1.2
 numpy==1.26.4
 torchvision
 transformers==4.42.4
-tokenizers==0.15.2
+tokenizers==0.19.1
 sentencepiece==0.1.99
 shortuuid
 accelerate==0.34.2
