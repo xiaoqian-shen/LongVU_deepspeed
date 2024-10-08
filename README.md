@@ -1,5 +1,5 @@
 # LongVU
-
+<a href="" rel="nofollow"><img alt="Static Badge" data-canonical-src="https://img.shields.io/badge/longvu-green" style="max-width: 100%;"></a>
 ## Models & Scripts
 
 ### Installation
