@@ -6,9 +6,9 @@
 >
 > <a href=''><img src='https://img.shields.io/badge/arXiv-paper-red'></a>  <a href='https://huggingface.co/spaces/Vision-CAIR/LongVU'><img src='https://img.shields.io/badge/demo-space-blue'></a> <a href=''><img src='https://img.shields.io/badge/model-checkpoints-green'></a>
 
-## Quick Start
+## :rocket: Quick Start
 
-Try our model in [Huggingface Space](https://huggingface.co/spaces/Vision-CAIR/LongVU)
+Try our model in [🤗 Space](https://huggingface.co/spaces/Vision-CAIR/LongVU)
 
 Or demploy from local
 
