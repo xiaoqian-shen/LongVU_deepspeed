@@ -4,7 +4,7 @@
 >
 > Authors
 >
-> <a href=''><img src='https://img.shields.io/badge/arXiv-todo-red'></a> <a href=''><img src='https://img.shields.io/badge/Demo-space-blue'></a>
+> <a href=''><img src='https://img.shields.io/badge/arXiv-paper-red'></a> <a href=''><img src='https://img.shields.io/badge/Demo-space-blue'></a>
 
 ## Models & Scripts
 
