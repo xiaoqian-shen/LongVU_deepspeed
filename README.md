@@ -37,6 +37,10 @@ Experiments are run on 64 H100-96G
 
 Stay tuned ...
 
+## Evaluation
+
+See detailed evaluation code in [eval.md](https://github.com/xiaoqian-shen/LongVU/blob/main/docs/eval.md)
+
 ## Acknowledgement
 
 + The model architecture of LongVU follows [LLaVA](https://github.com/haotian-liu/LLaVA) and [Cambrian](https://github.com/cambrian-mllm/cambrian)
