@@ -1,6 +1,6 @@
 # LongVU
 
-> **LongVU**
+> **LongVU: Spatiotemporal Adaptive Compression for Long Video-Language Understanding**
 >
 > Authors
 >
@@ -42,3 +42,14 @@ Stay tuned ...
 + The model architecture of LongVU follows [LLaVA](https://github.com/haotian-liu/LLaVA) and [Cambrian](https://github.com/cambrian-mllm/cambrian)
 + We base [Qwen2](https://huggingface.co/Qwen/Qwen2-7B-Instruct) and [Llama3.2](https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct) as the language backbone
 + We use [SigLIP](https://huggingface.co/google/siglip-so400m-patch14-384) and [DINOv2](https://huggingface.co/facebook/dinov2-giant) as the vision encoder
+
+## Citation
+
+```
+@article{shen2023mostganv,
+  author    = {},
+  title     = {LongVU: Spatiotemporal Adaptive Compression for Long Video-Language Understanding},
+  journal   = {},
+  year      = {2024},
+}
+```
