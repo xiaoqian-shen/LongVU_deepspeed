@@ -46,7 +46,7 @@ Stay tuned ...
 ## Citation
 
 ```
-@article{shen2023mostganv,
+@article{shen2024longvu,
   author    = {},
   title     = {LongVU: Spatiotemporal Adaptive Compression for Long Video-Language Understanding},
   journal   = {},
