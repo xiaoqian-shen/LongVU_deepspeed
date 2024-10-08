@@ -20,20 +20,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn import CrossEntropyLoss
 
-from transformers import (
-    AutoConfig,
-    AutoModelForCausalLM,
-    LlamaConfig,
-    LlamaForCausalLM,
-    LlamaModel,
-)
+from transformers import AutoConfig, AutoModelForCausalLM
 from transformers.cache_utils import Cache, DynamicCache
 from transformers.generation.utils import GenerateOutput
-
-from transformers.modeling_attn_mask_utils import (
-    _prepare_4d_causal_attention_mask,
-    _prepare_4d_causal_attention_mask_for_sdpa,
-)
 
 from transformers.modeling_outputs import (
     BaseModelOutputWithPast,
@@ -45,20 +34,22 @@ from ..cambrian_arch import CambrianMetaForCausalLM, CambrianMetaModel
 
 IS_XLA_AVAILABLE = False
 
+from transformers import Qwen2Config, Qwen2ForCausalLM, Qwen2Model
+
 logger = logging.get_logger(__name__)
 
 
-class CambrianConfig(LlamaConfig):
-    model_type = "cambrian_llama"
+class CambrianConfig(Qwen2Config):
+    model_type = "cambrian_qwen"
 
     debug = "debug"
 
 
-class CambrianLlamaModel(CambrianMetaModel, LlamaModel):
+class CambrianQwenModel(CambrianMetaModel, Qwen2Model):
     config_class = CambrianConfig
 
-    def __init__(self, config: LlamaConfig):
-        super(CambrianLlamaModel, self).__init__(config)
+    def __init__(self, config: Qwen2Config):
+        super(CambrianQwenModel, self).__init__(config)
 
     def forward(
         self,
@@ -72,19 +63,18 @@ class CambrianLlamaModel(CambrianMetaModel, LlamaModel):
         output_attentions: Optional[bool] = None,
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
+        cache_position: Optional[torch.LongTensor] = None,
         vision_tower_aux_feature_list: Optional[List[torch.FloatTensor]] = None,
         vision_tower_aux_attention_masks_list: Optional[List[torch.Tensor]] = None,
         final_vision_feature_size: Optional[List[tuple]] = None,
         global_context_feature: Optional[torch.Tensor] = None,
     ) -> Union[Tuple, BaseModelOutputWithPast]:
-
         output_attentions = (
             output_attentions
             if output_attentions is not None
-            # pyre-fixme[16]: `CambrianLlamaModel` has no attribute `config`.
+            # pyre-fixme[16]: `CambrianQwenModel` has no attribute `config`.
             else self.config.output_attentions
         )
-
         output_hidden_states = (
             output_hidden_states
             if output_hidden_states is not None
@@ -96,21 +86,13 @@ class CambrianLlamaModel(CambrianMetaModel, LlamaModel):
             return_dict if return_dict is not None else self.config.use_return_dict
         )
 
-        # retrieve input_ids and inputs_embeds
-        if input_ids is not None and inputs_embeds is not None:
+        if (input_ids is None) ^ (inputs_embeds is not None):
             raise ValueError(
-                "You cannot specify both input_ids and inputs_embeds at the same time"
+                "You cannot specify both input_ids and inputs_embeds at the same time, and must specify either one"
             )
-        elif input_ids is not None:
-            batch_size, seq_length = input_ids.shape[:2]
-        elif inputs_embeds is not None:
-            batch_size, seq_length = inputs_embeds.shape[:2]
-        else:
-            raise ValueError("You have to specify either input_ids or inputs_embeds")
 
-        # pyre-fixme[16]: `CambrianLlamaModel` has no attribute
-        #  `gradient_checkpointing`.
-        # pyre-fixme[16]: `CambrianLlamaModel` has no attribute `training`.
+        # pyre-fixme[16]: `CambrianQwenModel` has no attribute `gradient_checkpointing`.
+        # pyre-fixme[16]: `CambrianQwenModel` has no attribute `training`.
         if self.gradient_checkpointing and self.training:
             if use_cache:
                 logger.warning_once(
@@ -118,96 +100,79 @@ class CambrianLlamaModel(CambrianMetaModel, LlamaModel):
                 )
                 use_cache = False
 
-        past_key_values_length = 0
-        if use_cache:
-            use_legacy_cache = not isinstance(past_key_values, Cache)
-            if use_legacy_cache:
-                # pyre-fixme[9]: past_key_values has type
-                #  `Optional[List[FloatTensor]]`; used as `DynamicCache`.
-                # pyre-fixme[6]: For 1st argument expected
-                #  `Optional[Tuple[Tuple[FloatTensor]]]` but got
-                #  `Optional[List[FloatTensor]]`.
-                past_key_values = DynamicCache.from_legacy_cache(past_key_values)
-            # pyre-fixme[16]: `Optional` has no attribute `get_usable_length`.
-            past_key_values_length = past_key_values.get_usable_length(seq_length)
-
-        if position_ids is None:
-            # pyre-fixme[16]: `Optional` has no attribute `device`.
-            device = input_ids.device if input_ids is not None else inputs_embeds.device
-            position_ids = torch.arange(
-                past_key_values_length,
-                seq_length + past_key_values_length,
-                dtype=torch.long,
-                device=device,
+        use_legacy_cache = False
+        if use_cache and not isinstance(past_key_values, Cache):
+            use_legacy_cache = True
+            # pyre-fixme[6]: For 1st argument expected
+            #  `Optional[Tuple[Tuple[FloatTensor]]]` but got
+            #  `Optional[List[FloatTensor]]`.
+            past_key_values = DynamicCache.from_legacy_cache(past_key_values)
+            logger.warning_once(
+                "We detected that you are passing `past_key_values` as a tuple and this is deprecated and will be removed in v4.43. "
+                "Please use an appropriate `Cache` class (https://huggingface.co/docs/transformers/v4.41.3/en/internal/generation_utils#transformers.Cache)"
             )
-            position_ids = position_ids.unsqueeze(0)
 
         if inputs_embeds is None:
-            # pyre-fixme[16]: `CambrianLlamaModel` has no attribute `embed_tokens`.
+            # pyre-fixme[16]: `CambrianQwenModel` has no attribute `embed_tokens`.
             inputs_embeds = self.embed_tokens(input_ids)
 
-        # pyre-fixme[16]: `CambrianLlamaModel` has no attribute
-        #  `_use_flash_attention_2`.
-        self._use_flash_attention_2 = getattr(self, "_use_flash_attention_2", False)
-        # pyre-fixme[16]: `CambrianLlamaModel` has no attribute `_use_sdpa`.
-        self._use_sdpa = getattr(self, "_use_sdpa", True)
-        if self._use_flash_attention_2:
-            # 2d mask is passed through the layers
-            attention_mask = (
-                attention_mask
-                if (attention_mask is not None and 0 in attention_mask)
-                else None
+        if cache_position is None:
+            past_seen_tokens = (
+                # pyre-fixme[16]: Item `List` of `Union[List[torch._C.FloatTensor],
+                #  DynamicCache]` has no attribute `get_seq_length`.
+                past_key_values.get_seq_length() if past_key_values is not None else 0
             )
-        elif self._use_sdpa and not output_attentions:
-            # output_attentions=True can not be supported when using SDPA, and we fall back on
-            # the manual implementation that requires a 4D causal mask in all cases.
-            attention_mask = _prepare_4d_causal_attention_mask_for_sdpa(
-                attention_mask,
-                (batch_size, seq_length),
-                inputs_embeds,
-                past_key_values_length,
+            cache_position = torch.arange(
+                past_seen_tokens,
+                past_seen_tokens + inputs_embeds.shape[1],
+                device=inputs_embeds.device,
             )
-        else:
-            # 4d mask is passed through the layers
-            attention_mask = _prepare_4d_causal_attention_mask(
-                attention_mask,
-                (batch_size, seq_length),
-                inputs_embeds,
-                past_key_values_length,
-            )
+        if position_ids is None:
+            position_ids = cache_position.unsqueeze(0)
 
-        # embed positions
+        # pyre-fixme[16]: `CambrianQwenModel` has no attribute `_update_causal_mask`.
+        causal_mask = self._update_causal_mask(
+            attention_mask,
+            inputs_embeds,
+            cache_position,
+            past_key_values,
+            output_attentions,
+        )
+
         hidden_states = inputs_embeds
+
         # decoder layers
         all_hidden_states = () if output_hidden_states else None
         all_self_attns = () if output_attentions else None
         next_decoder_cache = None
 
-        # pyre-fixme[16]: `CambrianLlamaModel` has no attribute `layers`.
+        # pyre-fixme[16]: `CambrianQwenModel` has no attribute `layers`.
         for i, decoder_layer in enumerate(self.layers):
             if output_hidden_states:
                 all_hidden_states += (hidden_states,)
 
             if self.gradient_checkpointing and self.training:
-                # pyre-fixme[16]: `CambrianLlamaModel` has no attribute
+                # pyre-fixme[16]: `CambrianQwenModel` has no attribute
                 #  `_gradient_checkpointing_func`.
                 layer_outputs = self._gradient_checkpointing_func(
                     decoder_layer.__call__,
                     hidden_states,
-                    attention_mask,
+                    causal_mask,
                     position_ids,
                     past_key_values,
                     output_attentions,
                     use_cache,
+                    cache_position,
                 )
             else:
                 layer_outputs = decoder_layer(
                     hidden_states,
-                    attention_mask=attention_mask,
+                    attention_mask=causal_mask,
                     position_ids=position_ids,
                     past_key_value=past_key_values,
                     output_attentions=output_attentions,
                     use_cache=use_cache,
+                    cache_position=cache_position,
                 )
 
             hidden_states = layer_outputs[0]
@@ -218,7 +183,7 @@ class CambrianLlamaModel(CambrianMetaModel, LlamaModel):
             if output_attentions:
                 all_self_attns += (layer_outputs[1],)
 
-        # pyre-fixme[16]: `CambrianLlamaModel` has no attribute `norm`.
+        # pyre-fixme[16]: `CambrianQwenModel` has no attribute `norm`.
         hidden_states = self.norm(hidden_states)
 
         # add hidden states from the last decoder layer
@@ -229,11 +194,10 @@ class CambrianLlamaModel(CambrianMetaModel, LlamaModel):
         if use_cache:
             next_cache = (
                 next_decoder_cache.to_legacy_cache()
-                # pyre-fixme[61]: `use_legacy_cache` is undefined, or not always
-                #  defined.
                 if use_legacy_cache
                 else next_decoder_cache
             )
+
         if not return_dict:
             return tuple(
                 v
@@ -248,17 +212,17 @@ class CambrianLlamaModel(CambrianMetaModel, LlamaModel):
         )
 
 
-class CambrianLlamaForCausalLM(LlamaForCausalLM, CambrianMetaForCausalLM):
+class CambrianQwenForCausalLM(Qwen2ForCausalLM, CambrianMetaForCausalLM):
     config_class = CambrianConfig
 
     def __init__(self, config):
-        super(LlamaForCausalLM, self).__init__(config)
+        # super(Qwen2ForCausalLM, self).__init__(config)
+        Qwen2ForCausalLM.__init__(self, config)
+        config.model_type = "cambrian_qwen"
+        config.rope_scaling = None
 
-        self.model = CambrianLlamaModel(config)
-        self.pretraining_tp = config.pretraining_tp
-        self.vocab_size = config.vocab_size
+        self.model = CambrianQwenModel(config)
         self.lm_head = nn.Linear(config.hidden_size, config.vocab_size, bias=False)
-
         # Initialize weights and apply final processing
         self.post_init()
 
@@ -281,10 +245,14 @@ class CambrianLlamaForCausalLM(LlamaForCausalLM, CambrianMetaForCausalLM):
         image_aux_attention_masks_list: Optional[List[torch.Tensor]] = None,
         image_sizes: Optional[List[List[int]]] = None,
         return_dict: Optional[bool] = None,
+        modalities: Optional[List[str]] = ["image"],
+        dpo_forward: Optional[bool] = False,
         cache_position=None,
     ) -> Union[Tuple, CausalLMOutputWithPast]:
 
-        final_vision_feature_size = None
+        input_image_features = None
+        highres_image_features = None
+        frame_split_sizes = None
 
         if inputs_embeds is None:
             (
@@ -308,37 +276,9 @@ class CambrianLlamaForCausalLM(LlamaForCausalLM, CambrianMetaForCausalLM):
                 image_aux_attention_masks_list,
                 image_sizes,
             )
-        if IS_XLA_AVAILABLE:
-            # Very Important for TorchXLA
-            # self.model.gradient_checkpointing = False
 
-            # pyre-fixme[21]: Could not find module `torch_xla.utils.checkpoint`.
-            from torch_xla.utils.checkpoint import checkpoint
-
-            # self.model.gradient_checkpointing = True
-            # pyre-fixme[16]: `CambrianLlamaModel` has no attribute
-            #  `_gradient_checkpointing_func`.
-            self.model._gradient_checkpointing_func = checkpoint
-
-        output_attentions = (
-            output_attentions
-            if output_attentions is not None
-            # pyre-fixme[16]: `CambrianLlamaForCausalLM` has no attribute `config`.
-            else self.config.output_attentions
-        )
-        output_hidden_states = (
-            output_hidden_states
-            if output_hidden_states is not None
-            else self.config.output_hidden_states
-        )
-        return_dict = (
-            return_dict if return_dict is not None else self.config.use_return_dict
-        )
-
-        # training
-        if IS_XLA_AVAILABLE:
-            # decoder outputs consists of (dec_features, layer_state, dec_hidden, dec_attn)
-            # pyre-fixme[29]: `CambrianLlamaModel` is not a function.
+        if dpo_forward:
+            # pyre-fixme[29]: `CambrianQwenModel` is not a function.
             outputs = self.model(
                 input_ids=input_ids,
                 attention_mask=attention_mask,
@@ -349,23 +289,15 @@ class CambrianLlamaForCausalLM(LlamaForCausalLM, CambrianMetaForCausalLM):
                 output_attentions=output_attentions,
                 output_hidden_states=output_hidden_states,
                 return_dict=return_dict,
-                # pyre-fixme[61]: `vision_tower_aux_feature_list` is undefined, or
-                #  not always defined.
-                vision_tower_aux_feature_list=vision_tower_aux_feature_list,
-                # pyre-fixme[61]: `vision_tower_aux_attention_masks_list` is
-                #  undefined, or not always defined.
-                vision_tower_aux_attention_masks_list=vision_tower_aux_attention_masks_list,
-                final_vision_feature_size=final_vision_feature_size,
-                # pyre-fixme[61]: `global_context_feature` is undefined, or not
-                #  always defined.
-                global_context_feature=global_context_feature,
             )
 
-        # inference
+            hidden_states = outputs[0]
+            logits = self.lm_head(hidden_states)
+            return logits, labels
+
         else:
             if hasattr(self, "vision_tower_aux_feature_list"):
-                # decoder outputs consists of (dec_features, layer_state, dec_hidden, dec_attn)
-                # pyre-fixme[29]: `CambrianLlamaModel` is not a function.
+                # pyre-fixme[29]: `CambrianQwenModel` is not a function.
                 outputs = self.model(
                     input_ids=input_ids,
                     attention_mask=attention_mask,
@@ -381,8 +313,8 @@ class CambrianLlamaForCausalLM(LlamaForCausalLM, CambrianMetaForCausalLM):
                         #  undefined, or not always defined.
                         vision_tower_aux_feature_list
                         if inputs_embeds is None
-                        # pyre-fixme[16]: `CambrianLlamaForCausalLM` has no
-                        #  attribute `vision_tower_aux_feature_list`.
+                        # pyre-fixme[16]: `CambrianQwenForCausalLM` has no attribute
+                        #  `vision_tower_aux_feature_list`.
                         else self.vision_tower_aux_feature_list
                     ),
                     vision_tower_aux_attention_masks_list=(
@@ -390,15 +322,17 @@ class CambrianLlamaForCausalLM(LlamaForCausalLM, CambrianMetaForCausalLM):
                         #  undefined, or not always defined.
                         vision_tower_aux_attention_masks_list
                         if inputs_embeds is None
-                        # pyre-fixme[16]: `CambrianLlamaForCausalLM` has no
-                        #  attribute `vision_tower_aux_attention_masks_list`.
+                        # pyre-fixme[16]: `CambrianQwenForCausalLM` has no attribute
+                        #  `vision_tower_aux_attention_masks_list`.
                         else self.vision_tower_aux_attention_masks_list
                     ),
                     final_vision_feature_size=(
+                        # pyre-fixme[61]: `final_vision_feature_size` is undefined,
+                        #  or not always defined.
                         final_vision_feature_size
                         if inputs_embeds is None
-                        # pyre-fixme[16]: `CambrianLlamaForCausalLM` has no
-                        #  attribute `final_vision_feature_size`.
+                        # pyre-fixme[16]: `CambrianQwenForCausalLM` has no attribute
+                        #  `final_vision_feature_size`.
                         else self.final_vision_feature_size
                     ),
                     global_context_feature=(
@@ -406,13 +340,13 @@ class CambrianLlamaForCausalLM(LlamaForCausalLM, CambrianMetaForCausalLM):
                         #  not always defined.
                         global_context_feature
                         if inputs_embeds is None
-                        # pyre-fixme[16]: `CambrianLlamaForCausalLM` has no
-                        #  attribute `global_context_feature`.
+                        # pyre-fixme[16]: `CambrianQwenForCausalLM` has no attribute
+                        #  `global_context_feature`.
                         else self.global_context_feature
                     ),
                 )
             else:
-                # pyre-fixme[29]: `CambrianLlamaModel` is not a function.
+                # pyre-fixme[29]: `CambrianQwenModel` is not a function.
                 outputs = self.model(
                     input_ids=input_ids,
                     attention_mask=attention_mask,
@@ -426,44 +360,35 @@ class CambrianLlamaForCausalLM(LlamaForCausalLM, CambrianMetaForCausalLM):
                     # final_vision_feature_size=final_vision_feature_size,
                 )
 
-        hidden_states = outputs[0]
-        if self.config.pretraining_tp > 1:
-            lm_head_slices = self.lm_head.weight.split(
-                self.vocab_size // self.config.pretraining_tp, dim=0
-            )
-            logits = [
-                F.linear(hidden_states, lm_head_slices[i])
-                for i in range(self.config.pretraining_tp)
-            ]
-            logits = torch.cat(logits, dim=-1)
-        else:
+            hidden_states = outputs[0]
             logits = self.lm_head(hidden_states)
-        logits = logits.float()
+            logits = logits.float()
 
-        loss = None
-        if labels is not None:
-            # Shift so that tokens < n predict n
-            shift_logits = logits[..., :-1, :].contiguous()
-            shift_labels = labels[..., 1:].contiguous()
-            # Flatten the tokens
-            loss_fct = CrossEntropyLoss()
-            shift_logits = shift_logits.view(-1, self.config.vocab_size)
-            shift_labels = shift_labels.view(-1)
-            # Enable model parallelism
-            shift_labels = shift_labels.to(shift_logits.device)
-            loss = loss_fct(shift_logits, shift_labels)
+            loss = None
+            if labels is not None:
+                # Shift so that tokens < n predict n
+                shift_logits = logits[..., :-1, :].contiguous()
+                shift_labels = labels[..., 1:].contiguous()
+                # Flatten the tokens
+                loss_fct = CrossEntropyLoss()
+                # pyre-fixme[16]: `CambrianQwenForCausalLM` has no attribute `config`.
+                shift_logits = shift_logits.view(-1, self.config.vocab_size)
+                shift_labels = shift_labels.view(-1)
+                # Enable model parallelism
+                shift_labels = shift_labels.to(shift_logits.device)
+                loss = loss_fct(shift_logits, shift_labels)
 
-        if not return_dict:
-            output = (logits,) + outputs[1:]
-            return (loss,) + output if loss is not None else output
+            if not return_dict:
+                output = (logits,) + outputs[1:]
+                return (loss,) + output if loss is not None else output
 
-        return CausalLMOutputWithPast(
-            loss=loss,
-            logits=logits,
-            past_key_values=outputs.past_key_values,
-            hidden_states=outputs.hidden_states,
-            attentions=outputs.attentions,
-        )
+            return CausalLMOutputWithPast(
+                loss=loss,
+                logits=logits,
+                past_key_values=outputs.past_key_values,
+                hidden_states=outputs.hidden_states,
+                attentions=outputs.attentions,
+            )
 
     @torch.no_grad()
     def generate(
@@ -499,24 +424,24 @@ class CambrianLlamaForCausalLM(LlamaForCausalLM, CambrianMetaForCausalLM):
                 images,
                 image_sizes=image_sizes,
             )
-            # pyre-fixme[16]: `CambrianLlamaForCausalLM` has no attribute
+            # pyre-fixme[16]: `CambrianQwenForCausalLM` has no attribute
             #  `vision_tower_aux_feature_list`.
             self.vision_tower_aux_feature_list = vision_tower_aux_feature_list
-            # pyre-fixme[16]: `CambrianLlamaForCausalLM` has no attribute
+            # pyre-fixme[16]: `CambrianQwenForCausalLM` has no attribute
             #  `vision_tower_aux_attention_masks_list`.
             self.vision_tower_aux_attention_masks_list = (
                 vision_tower_aux_attention_masks_list
             )
-            # pyre-fixme[16]: `CambrianLlamaForCausalLM` has no attribute
+            # pyre-fixme[16]: `CambrianQwenForCausalLM` has no attribute
             #  `final_vision_feature_size`.
             self.final_vision_feature_size = final_vision_feature_size
-            # pyre-fixme[16]: `CambrianLlamaForCausalLM` has no attribute
+            # pyre-fixme[16]: `CambrianQwenForCausalLM` has no attribute
             #  `global_context_feature`.
             self.global_context_feature = global_context_feature
         else:
             inputs_embeds = self.get_model().embed_tokens(inputs)
 
-        # pyre-fixme[16]: `LlamaForCausalLM` has no attribute `generate`.
+        # pyre-fixme[16]: `Qwen2ForCausalLM` has no attribute `generate`.
         return super().generate(
             position_ids=position_ids,
             attention_mask=attention_mask,
@@ -542,5 +467,5 @@ class CambrianLlamaForCausalLM(LlamaForCausalLM, CambrianMetaForCausalLM):
         return inputs
 
 
-AutoConfig.register("cambrian_llama", CambrianConfig)
-AutoModelForCausalLM.register(CambrianConfig, CambrianLlamaForCausalLM)
+AutoConfig.register("cambrian_qwen", CambrianConfig)
+AutoModelForCausalLM.register(CambrianConfig, CambrianQwenForCausalLM)
