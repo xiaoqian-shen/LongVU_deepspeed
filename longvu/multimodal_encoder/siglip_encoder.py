@@ -10,7 +10,7 @@ class SiglipVisionTower(BaseVisionTower):
     def __init__(self, vision_tower_name, args, delay_load=False):
         super(SiglipVisionTower, self).__init__(vision_tower_name, args, delay_load)
         
-        model_path = "./checkpoints/siglip-so400m-patch14-384"
+        model_path = "google/siglip-so400m-patch14-384"
         base_model_name, res, interp = model_path, 384, 576
         self.vision_tower_name = base_model_name
         self._image_size = res if res is not None else 512
