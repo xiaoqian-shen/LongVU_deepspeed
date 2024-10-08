@@ -16,4 +16,4 @@ pip install -r requirements.txt
 
 Download our checkpoints from [huggingface]() and put it under `./checkpoints`
 
-See quick inference code in [[inference.md]](https://github.com/xiaoqian-shen/LongVU/blob/main/docs/inference.md)
+See quick inference code in [inference.md](https://github.com/xiaoqian-shen/LongVU/blob/main/docs/inference.md)
