@@ -14,7 +14,7 @@ conda activate longvu
 pip install -r requirements.txt
 ```
 
-Download [SigLIP](https://huggingface.co/google/siglip-so400m-patch14-384), [DINOv2](https://huggingface.co/facebook/dinov2-giant) and our checkpoints from [huggingface](), then put it under `./checkpoints`
+Download our checkpoints from [huggingface](), then put it under `./checkpoints`
 
 See quick inference code in [inference.md](https://github.com/xiaoqian-shen/LongVU/blob/main/docs/inference.md)
 
