@@ -18,4 +18,4 @@ Download our checkpoints from [huggingface]() and put it under `./checkpoints`
 
 See quick inference code in [inference.md](https://github.com/xiaoqian-shen/LongVU/blob/main/docs/inference.md)
 
-Try our model in <a href=''><img src='https://img.shields.io/badge/demo-space-blue'></a>
+Try our model in Huggingface Space!
