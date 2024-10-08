@@ -33,6 +33,8 @@ See quick inference code in [inference.md](https://github.com/xiaoqian-shen/Long
 
 ### Scripts
 
+Experiments are run on 64 H100-96G
+
 Stay tuned ...
 
 ## Acknowledgement
