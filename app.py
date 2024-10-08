@@ -314,6 +314,4 @@ with gr.Blocks(title='LongVU', theme=theme, css=block_css) as demo:
         [message, chatbot],
         [image, video, message, chatbot, textbox])
 
-keyfile = '/var/facebook/x509_identities/server.pem'
-crtfile = '/var/facebook/x509_identities/server.pem'
-demo.launch(share=False, server_name="devgpu019.nha2.facebook.com", server_port=8093, ssl_keyfile=keyfile, ssl_certfile=crtfile, ssl_verify=False)
+demo.launch()
