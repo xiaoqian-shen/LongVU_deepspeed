@@ -4,7 +4,7 @@
 >
 > Authors
 >
-> <a href=''><img src='https://img.shields.io/badge/arXiv-paper-red'></a>  <a href=''><img src='https://img.shields.io/badge/demo-space-blue'></a> <a href=''><img src='https://img.shields.io/badge/model-checkpoints-green'></a>
+> <a href=''><img src='https://img.shields.io/badge/arXiv-paper-red'></a>  <a href=''>https://huggingface.co/spaces/Vision-CAIR/LongVU<img src='https://img.shields.io/badge/demo-space-blue'></a> <a href=''><img src='https://img.shields.io/badge/model-checkpoints-green'></a>
 
 ## Quick Start
 
