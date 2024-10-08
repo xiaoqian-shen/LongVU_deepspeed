@@ -10,7 +10,7 @@ class DinoVisionTower(BaseVisionTower):
     def __init__(self, vision_tower, args, delay_load=False):
         super(DinoVisionTower, self).__init__(vision_tower, args, delay_load)
 
-        model_path = "./checkpoints/dinov2-giant"
+        model_path = "facebook/dinov2-giant"
         base_model_name, res, interp = model_path, 378, 576
         self._vision_tower_name = vision_tower
         self.vision_tower_name = base_model_name
