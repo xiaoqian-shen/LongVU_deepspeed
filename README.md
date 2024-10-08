@@ -1,5 +1,11 @@
 # LongVU
-<a href="" rel="nofollow"><img alt="Static Badge" data-canonical-src="https://img.shields.io/badge/longvu-green" style="max-width: 100%;"></a>
+
+> **LongVU***.
+>
+> Authors
+>
+> <a href=''><img src='https://img.shields.io/badge/arXiv-todo-red'></a> <a href=''><img src='https://img.shields.io/badge/Demo-space-blue'></a>
+
 ## Models & Scripts
 
 ### Installation
