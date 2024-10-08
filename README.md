@@ -8,6 +8,12 @@
 
 ## Quick Start
 
+Try our model in [Huggingface Space](https://huggingface.co/spaces/Vision-CAIR/LongVU)
+
+or
+
+Demploy from local
+
 ```
 conda create -n longvu python=3.10
 conda activate longvu
@@ -18,7 +24,7 @@ Download our checkpoints from [here](), then put it under `./checkpoints`
 
 See quick inference code in [inference.md](https://github.com/xiaoqian-shen/LongVU/blob/main/docs/inference.md)
 
-Try our model in [Huggingface Space]()
+
 
 ## Training
 
