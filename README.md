@@ -10,9 +10,7 @@
 
 Try our model in [Huggingface Space](https://huggingface.co/spaces/Vision-CAIR/LongVU)
 
-or
-
-Demploy from local
+Or demploy from local
 
 ```
 conda create -n longvu python=3.10
