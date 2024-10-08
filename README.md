@@ -1,6 +1,6 @@
 # LongVU
 
-> **LongVU**.
+> **LongVU**
 >
 > Authors
 >
