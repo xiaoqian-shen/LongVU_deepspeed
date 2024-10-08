@@ -13,4 +13,4 @@ conda create -n longvu python=3.10
 conda activate longvu
 pip install -r requirements.txt
 ```
-See quick inference code in [inference.md](https://github.com/xiaoqian-shen/LongVU/blob/main/docs/inference.md)
+See quick inference code in [[inference.md]](https://github.com/xiaoqian-shen/LongVU/blob/main/docs/inference.md)
