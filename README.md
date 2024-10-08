@@ -27,6 +27,10 @@ Try our model in [Huggingface Space]()
 + image-text stage: [LLaVA-OneVision-Single](https://huggingface.co/datasets/lmms-lab/LLaVA-OneVision-Data)
 + video-text stage: [VideoChat2-IT](https://huggingface.co/datasets/OpenGVLab/VideoChat2-IT)
 
+### Scripts
+
+Stay tuned ...
+
 ## Acknowledgement
 
 + The model architecture of LongVU follows [LLaVA](https://github.com/haotian-liu/LLaVA) and [Cambrian](https://github.com/cambrian-mllm/cambrian)
