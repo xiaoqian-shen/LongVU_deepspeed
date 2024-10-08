@@ -25,10 +25,10 @@ Try our model in [Huggingface Space]()
 ### Dataset
 
 + image-text stage: [LLaVA-OneVision-Single](https://huggingface.co/datasets/lmms-lab/LLaVA-OneVision-Data)
-+ video-text stage: [VideoChat2-IT video](https://huggingface.co/datasets/OpenGVLab/VideoChat2-IT)
++ video-text stage: [VideoChat2-IT](https://huggingface.co/datasets/OpenGVLab/VideoChat2-IT)
 
 ## Acknowledgement
 
 + The model architecture of LongVU follows [LLaVA](https://github.com/haotian-liu/LLaVA) and [Cambrian](https://github.com/cambrian-mllm/cambrian)
-+ We base [Qwen2](https://huggingface.co/Qwen/Qwen2-7B-Instruct) and [Llama3.2](https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct) as language backbone
-+ We use [SigLIP](https://huggingface.co/google/siglip-so400m-patch14-384) and [DINOv2](https://huggingface.co/facebook/dinov2-giant) as vision encoder
++ We base [Qwen2](https://huggingface.co/Qwen/Qwen2-7B-Instruct) and [Llama3.2](https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct) as the language backbone
++ We use [SigLIP](https://huggingface.co/google/siglip-so400m-patch14-384) and [DINOv2](https://huggingface.co/facebook/dinov2-giant) as the vision encoder
