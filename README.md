@@ -18,7 +18,7 @@ conda activate longvu
 pip install -r requirements.txt
 ```
 
-Download our checkpoints from [here](), then put it under `./checkpoints`
+Download our checkpoints from [here]() and put it under `./checkpoints`
 
 See quick inference code in [inference.md](https://github.com/xiaoqian-shen/LongVU/blob/main/docs/inference.md)
 
