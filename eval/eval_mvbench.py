@@ -37,7 +37,7 @@ from longvu.mm_datautils import (
     tokenizer_image_token,
 )
 
-from decord import cpu, VideoReader  # @manual=fbsource//third-party/pypi/decord:decord
+from decord import cpu, VideoReader  
 from torch import distributed as dist
 from tqdm import tqdm
 
@@ -162,7 +162,6 @@ class EvalDataset(torch.utils.data.IterableDataset):
                     }
                 )
 
-        # pyre-fixme[4]: Attribute must be annotated.
         self.data = list_data_dict
 
     def __len__(self) -> int:
@@ -187,7 +186,7 @@ def train(args) -> None:
 
     # torch.distributed.barrier()
     tokenizer, model, image_processor, context_len = load_pretrained_model(
-        model_path,  # pyre-fixme
+        model_path,  
         None,
         model_name,
         device_map=None,
@@ -196,7 +195,6 @@ def train(args) -> None:
     model.config.use_cache = True
     model.cuda()
     dataset = EvalDataset(
-        # pyre-fixme[16]: `DataClass` has no attribute `train_data_local_path`.
         data_path=args.data_path,
     )
     world_size = torch.distributed.get_world_size()
@@ -236,7 +234,6 @@ def train(args) -> None:
                             for i in range(
                                 start_idx,
                                 end_idx,
-                                # pyre-fixme[16]: `DataClass` has no attribute `video_fps`.
                                 round(fps / 2),
                             )
                         ]
@@ -248,7 +245,6 @@ def train(args) -> None:
                             for i in range(
                                 0,
                                 len(vr),
-                                # pyre-fixme[16]: `DataClass` has no attribute `video_fps`.
                                 round(fps / 2),
                             )
                         ]
@@ -273,7 +269,6 @@ def train(args) -> None:
                     for i in range(
                         start_idx,
                         end_idx,
-                        # pyre-fixme[16]: `DataClass` has no attribute `video_fps`.
                         round(fps / 2),
                     )
                 ]
@@ -303,7 +298,6 @@ def train(args) -> None:
         else:
             qs = DEFAULT_IMAGE_TOKEN + "\n" + qs
 
-        # pyre-fixme[16]: `DataClass` has no attribute `version`.
         conv = conv_templates[version].copy()
         conv.append_message(conv.roles[0], qs)
         conv.append_message(conv.roles[1], None)
@@ -331,7 +325,7 @@ def train(args) -> None:
                 image_sizes=image_sizes,
                 do_sample=False,
                 temperature=0.0,
-                max_new_tokens=5,  # pyre-fixme
+                max_new_tokens=5,  
                 use_cache=True,
                 stopping_criteria=[stopping_criteria],
             )
@@ -379,8 +373,7 @@ def train(args) -> None:
         final_output,
         output,
     )
-    # pyre-fixme[6]: For 1st argument expected `Iterable[Variable[_T]]` but got
-    #  `None`.
+    
     all_output = list(chain(*final_output))
     global_rank = dist.get_rank()
     if global_rank == 0:
