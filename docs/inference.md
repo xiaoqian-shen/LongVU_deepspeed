@@ -1,4 +1,7 @@
 ## Inference Code
+
+Below is a quick inference code:
+
 ```
 import numpy as np
 import torch
