@@ -87,7 +87,6 @@ def train(args) -> None:
     model.config.use_cache = True
     model.cuda()
     dataset = EvalDataset(
-        # pyre-fixme[16]: `DataClass` has no attribute `train_data_local_path`.
         data_path=args.data_path,
     )
     world_size = torch.distributed.get_world_size()
@@ -115,14 +114,12 @@ def train(args) -> None:
         a4 = line["option 4"]
         qs = f"Question: {question}\nOptions:\n(A) {a0}\n(B) {a1}\n(C) {a2}\n(D) {a3}\n(E) {a4}\nRespond with only the letter (A, B, C, D or E) of the correct option."
         video_path = os.path.join(
-            # pyre-fixme[16]: `DataClass` has no attribute `image_folder`.
             args.data_path,
             "good_clips_git",
             f"{idx}.mp4",
         )
         for fmt in video_formats:
             temp_path = os.path.join(
-                # pyre-fixme[16]: `DataClass` has no attribute `image_folder`.
                 args.data_path,
                 "good_clips_git",
                 f"{idx}{fmt}",
@@ -136,7 +133,6 @@ def train(args) -> None:
             fps = round(vr.get_avg_fps())
             frame_idx = [
                     i
-                    # pyre-fixme[16]: `DataClass` has no attribute `video_fps`.
                     for i in range(0, len(vr), round(fps / 0.5))
                 ]
             if len(frame_idx) > 1000:
@@ -164,7 +160,6 @@ def train(args) -> None:
         else:
             qs = DEFAULT_IMAGE_TOKEN + "\n" + qs
 
-        # pyre-fixme[16]: `DataClass` has no attribute `version`.
         conv = conv_templates[version].copy()
         conv.append_message(conv.roles[0], qs)
         conv.append_message(conv.roles[1], None)
@@ -192,7 +187,7 @@ def train(args) -> None:
                 image_sizes=image_sizes,
                 do_sample=False,
                 temperature=0.0,
-                max_new_tokens=5,  # pyre-fixme
+                max_new_tokens=5,  
                 use_cache=True,
                 stopping_criteria=[stopping_criteria],
             )
@@ -237,8 +232,6 @@ def train(args) -> None:
         final_output,
         output,
     )
-    # pyre-fixme[6]: For 1st argument expected `Iterable[Variable[_T]]` but got
-    #  `None`.
     all_output = list(chain(*final_output))
     global_rank = dist.get_rank()
     if global_rank == 0:
