@@ -27,6 +27,7 @@ Download [MVLU](https://huggingface.co/datasets/MLVU/MVLU) to `./data/MVLU`
 
 ```
 python -m torch.distributed.launch --nproc-per-node=8 eval/eval_mlvu.py --data_path ./data/MVLU --version qwen --model_path ./checkpoints/longvu_qwen
+python -m torch.distributed.launch --nproc-per-node=8 eval/eval_mlvu.py --data_path ./data/MVLU --version llama3 --model_path ./checkpoints/longvu_llama3_2
 ```
 
 ## VideoMME
@@ -35,4 +36,5 @@ Download [VideoMME](https://github.com/BradyFU/Video-MME?tab=readme-ov-file#-dat
 
 ```
 python -m torch.distributed.launch --nproc-per-node=8 eval/eval_videomme.py --data_path ./data/VideoMME --version qwen --model_path ./checkpoints/longvu_qwen
+python -m torch.distributed.launch --nproc-per-node=8 eval/eval_videomme.py --data_path ./data/VideoMME --version llama3 --model_path ./checkpoints/longvu_llama3_2
 ```
