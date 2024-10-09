@@ -43,6 +43,79 @@ from tqdm import tqdm
 
 from transformers.trainer_pt_utils import IterableDatasetShard
 
+tasks = {
+    "Action Sequence": (
+        "action_sequence.json",
+        "star/Charades_v1_480/",
+        "video",
+        True,
+    ),  # has start & end
+    "Action Prediction": (
+        "action_prediction.json",
+        "star/Charades_v1_480/",
+        "video",
+        True,
+    ),  # has start & end
+    "Action Antonym": ("action_antonym.json", "ssv2_video/", "video", False),
+    "Fine-grained Action": (
+        "fine_grained_action.json",
+        "Moments_in_Time_Raw/videos/",
+        "video",
+        False,
+    ),
+    "Unexpected Action": ("unexpected_action.json", "FunQA_test/test/", "video", False),
+    "Object Existence": (
+        "object_existence.json",
+        "clevrer/video_validation/",
+        "video",
+        False,
+    ),
+    "Object Interaction": (
+        "object_interaction.json",
+        "star/Charades_v1_480/",
+        "video",
+        True,
+    ),  # has start & end
+    "Object Shuffle": ("object_shuffle.json", "perception/videos/", "video", False),
+    "Moving Direction": (
+        "moving_direction.json",
+        "clevrer/video_validation/",
+        "video",
+        False,
+    ),
+    "Action Localization": (
+        "action_localization.json",
+        "sta/sta_video/",
+        "video",
+        True,
+    ),  # has start & end
+    "Scene Transition": ("scene_transition.json", "scene_qa/video/", "video", False),
+    "Action Count": ("action_count.json", "perception/videos/", "video", False),
+    "Moving Count": ("moving_count.json", "clevrer/video_validation/", "video", False),
+    "Moving Attribute": (
+        "moving_attribute.json",
+        "clevrer/video_validation/",
+        "video",
+        False,
+    ),
+    "State Change": ("state_change.json", "perception/videos/", "video", False),
+    "Fine-grained Pose": ("fine_grained_pose.json", "nturgbd/", "video", False),
+    "Character Order": ("character_order.json", "perception/videos/", "video", False),
+    "Egocentric Navigation": ("egocentric_navigation.json", "vlnqa/", "video", False),
+    "Episodic Reasoning": (
+        "episodic_reasoning.json",
+        "tvqa/frames_fps3_hq/",
+        "frame",
+        True,
+    ),  # has start & end, read frame
+    "Counterfactual Inference": (
+        "counterfactual_inference.json",
+        "clevrer/video_validation/",
+        "video",
+        False,
+    ),
+}
+
 class EvalDataset(torch.utils.data.IterableDataset):
     """Dataset for supervised fine-tuning."""
 
@@ -54,38 +127,38 @@ class EvalDataset(torch.utils.data.IterableDataset):
 
         self.data_path = data_path
 
-        data_list = {
-            "count": ("json/4_count.json", f"video/4_count", "video"),
-            "ego": ("json/3_ego.json", f"video/3_ego", "video"),
-            "needle": ("json/2_needle.json", f"video/2_needle", "video"),
-            "order": ("json/5_order.json", f"video/5_order", "video"),
-            "plotQA": ("json/1_plotQA.json", f"video/1_plotQA", "video"),
-            "anomaly_reco": (
-                "json/6_anomaly_reco.json",
-                f"video/6_anomaly_reco",
-                "video",
-            ),
-            "topic_reasoning": (
-                "json/7_topic_reasoning.json",
-                f"video/7_topic_reasoning",
-                "video",
-            ),
-        }
-
         list_data_dict = []
-        for k, v in data_list.items():
-            with open(os.path.join(data_path, v[0]), "r") as f:
+        for task_name, task in tasks.items():
+            json_file = os.path.join(data_path, "json", task[0])
+            vis_folder = os.path.join(data_path, "video", task[1])
+            with open(json_file, "r") as f:
                 json_data = json.load(f)
             for data in json_data:
-                question, answer = self.qa_template(data)
+                video_path = os.path.join(vis_folder, data["video"])
+                answer = data["answer"]
+                question = data["question"]
+                answer_idx = -1
+                letters = []
+                options = data["candidates"]
+                options_string = ""
+                for option_idx, c in enumerate(options):
+                    letters.append(f"{chr(ord('A') + option_idx)}")
+                    options_string += f"({chr(ord('A') + option_idx)}) {c}\n"
+                    if c == answer:
+                        answer_idx = option_idx
+                prompt = f"Question: {question}\nOptions:\n{options_string}Answer with the option's letter from the given choices directly and only give the best option."
                 list_data_dict.append(
                     {
-                        "task_type": k,
-                        "video": os.path.join(self.data_path, v[1], data["video"]),
-                        "video_name": data["video"],
-                        "question": data["question"],
-                        "prompt": question,
-                        "answer": answer,
+                        "task_type": task_name,
+                        "bound": (data["start"], data["end"]) if task[3] else task[3],
+                        "question": question,
+                        "prompt": prompt,
+                        "answer": answer_idx,
+                        "answer_word": data["answer"],
+                        "video_name": data["video"].split(".")[0],
+                        "video": video_path,
+                        "data_type": task[2],
+                        "letters": ",".join(letters),
                     }
                 )
 
@@ -94,24 +167,6 @@ class EvalDataset(torch.utils.data.IterableDataset):
 
     def __len__(self) -> int:
         return len(self.data)
-
-    # pyre-fixme[3]: Return type must be annotated.
-    # pyre-fixme[2]: Parameter must be annotated.
-    def qa_template(self, data):
-        question = f"Question: {data['question']}\n"
-        question += "Options:\n"
-        answer = data["answer"]
-        answer_idx = -1
-        for idx, c in enumerate(data["candidates"]):
-            question += f"({chr(ord('A') + idx)}) {c}\n"
-            if c == answer:
-                answer_idx = idx
-        question += (
-            "Respond with only the letter (A, B, C or D) of the correct option.\n"
-        )
-        question = question.rstrip()
-        answer = f"{chr(ord('A') + answer_idx)}"
-        return question, answer
 
     # pyre-fixme[3]: Return type must be annotated.
     def __iter__(self):
@@ -137,8 +192,7 @@ def train(args) -> None:
         model_name,
         device_map=None,
     )
-    model.get_model().config.dino_threshold = 0.82
-    model.get_model().config.drop_threshold = 0.77
+    model.get_model().config.drop_threshold = 0.8
     model.config.use_cache = True
     model.cuda()
     dataset = EvalDataset(
@@ -162,25 +216,74 @@ def train(args) -> None:
         answer = line["answer"]
         qs = line["prompt"]
         task_type = line["task_type"]
-        video_path = os.path.join(
-            args.data_path,
-            line["video"],
-        )
+        video_path = line["video"]
+        bound = line["bound"]
+        data_type = line["data_type"]
+        letters = line["letters"].split(",")
 
         if os.path.exists(video_path):
-            vr = VideoReader(video_path, ctx=cpu(0))
-            fps = round(vr.get_avg_fps())
-            frame_idx = [
+            if data_type == "video":
+                vr = VideoReader(video_path, ctx=cpu(0), num_threads=1)
+                max_frame = len(vr) - 1
+                fps = float(vr.get_avg_fps())
+                if bound:
+                    start, end = bound[0], bound[1]
+                    start_idx = max(0, round(start * fps))
+                    end_idx = min(round(end * fps), max_frame)
+                    frame_indices = np.array(
+                        [
+                            i
+                            for i in range(
+                                start_idx,
+                                end_idx,
+                                # pyre-fixme[16]: `DataClass` has no attribute `video_fps`.
+                                round(fps / 2),
+                            )
+                        ]
+                    )
+                else:
+                    frame_indices = np.array(
+                        [
+                            i
+                            for i in range(
+                                0,
+                                len(vr),
+                                # pyre-fixme[16]: `DataClass` has no attribute `video_fps`.
+                                round(fps / 2),
+                            )
+                        ]
+                    )
+                video = []
+                for frame_index in frame_indices:
+                    img = vr[frame_index].asnumpy()
+                    video.append(img)
+                video = np.stack(video)
+            else:
+                max_frame = len(os.listdir(video_path))
+                images_group = list()
+                fps = 3
+                if bound:
+                    start, end = bound[0], bound[1]
+                else:
+                    start, end = -100000, 100000
+                start_idx = max(1, round(start * fps))
+                end_idx = min(round(end * fps), max_frame)
+                frame_indices = [
                     i
-                    # pyre-fixme[16]: `DataClass` has no attribute `video_fps`.
-                    for i in range(0, len(vr), round(fps / 0.5))
+                    for i in range(
+                        start_idx,
+                        end_idx,
+                        # pyre-fixme[16]: `DataClass` has no attribute `video_fps`.
+                        round(fps / 2),
+                    )
                 ]
-            if len(frame_idx) > 1000:
-                frame_idx = [
-                    frame_idx[i]
-                    for i in range(0, len(frame_idx), len(frame_idx) // 1000)
-                ]
-            video = vr.get_batch(frame_idx).asnumpy()
+                for frame_index in frame_indices:
+                    img = Image.open(
+                        os.path.join(video_path, f"{frame_index:05d}.jpg")
+                    ).convert("RGB")
+                    images_group.append(np.array(img))
+                video = np.stack(images_group)
+            
             image_sizes = [video[0].shape[:2]]
             video = process_images(video, image_processor, model.config)
             video = [item.unsqueeze(0) for item in video]
@@ -242,9 +345,9 @@ def train(args) -> None:
             pred = pred.strip()
         pred = pred.replace("Answer", "")
 
-        letters = ["A", "B", "C", "D"]
-
-        pred_answer = re.findall("[\(\ \[]*([A-D])[\)\.\ \]]*", pred)
+        pred_answer = re.findall(
+            f"[\(,\ ]*[{letters[0]}-{letters[-1]}][\),\ ]*", pred
+        )
 
         pred_answer = pred_answer[0].strip()
         pred_answer = pred_answer.strip("()")
@@ -262,7 +365,7 @@ def train(args) -> None:
                 "question": line["question"],
                 "prompt": qs,
                 "answer": answer,
-                "pred": pred,
+                "pred": pred_idx,
                 "task_type": task_type,
                 "answer_id": str(ans_id),
                 "model_id": model_name,
@@ -291,34 +394,26 @@ def train(args) -> None:
         ) as f:
             json.dump(all_output, f)
 
-        correct = 0
-        total = 0
-        acc_dict = {}
-        for output in all_output:
-            pred = output["pred"]
-            gt = output["answer"]
-            task_type = output["task_type"]
-            if task_type not in acc_dict:
-                acc_dict[task_type] = [0, 0]
-            acc_dict[task_type][1] += 1
-            total += 1
+        task_types = tasks.keys()
+        task_acc = {x: [] for x in task_types}
+        acc = []
 
-            if pred == gt:
-                acc_dict[task_type][0] += 1
-                correct += 1
+        for i, x in enumerate(all_output):
+            value = 1
+            if x["pred"] != x["answer"]:
+                value = 0
+            acc.append(value)
+            task_acc[x["task_type"]].append(value)
 
-        final_res = dict()
-        total = 0
-        idx = 0
-        for k, v in acc_dict.items():
-            idx += 1
-            final_res[k] = v[0] / v[1] * 100
-            total += final_res[k]
-        final_res["Acc"] = total / idx
-        print(final_res, flush=True)
+        acc = sum(acc) * 100 / len(acc)
+        task_acc = {x: sum(task_acc[x]) * 100 / len(task_acc[x]) for x in task_acc}
+        print(f"Accuracy: ", acc)
+        print("Task ccuracy", task_acc)
+
+        task_acc["avg"] = acc
 
         with open(os.path.join("/tmp/generated_text", "result.json"), "w") as f:
-            json.dump(final_res, f)
+            json.dump(task_acc, f)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

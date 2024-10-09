@@ -20,6 +20,7 @@ import sys
 sys.path.append('./')
 import numpy as np
 from PIL import Image
+import pandas as pd
 
 import torch
 
@@ -52,66 +53,11 @@ class EvalDataset(torch.utils.data.IterableDataset):
     ) -> None:
         super(EvalDataset, self).__init__()
 
-        self.data_path = data_path
-
-        data_list = {
-            "count": ("json/4_count.json", f"video/4_count", "video"),
-            "ego": ("json/3_ego.json", f"video/3_ego", "video"),
-            "needle": ("json/2_needle.json", f"video/2_needle", "video"),
-            "order": ("json/5_order.json", f"video/5_order", "video"),
-            "plotQA": ("json/1_plotQA.json", f"video/1_plotQA", "video"),
-            "anomaly_reco": (
-                "json/6_anomaly_reco.json",
-                f"video/6_anomaly_reco",
-                "video",
-            ),
-            "topic_reasoning": (
-                "json/7_topic_reasoning.json",
-                f"video/7_topic_reasoning",
-                "video",
-            ),
-        }
-
-        list_data_dict = []
-        for k, v in data_list.items():
-            with open(os.path.join(data_path, v[0]), "r") as f:
-                json_data = json.load(f)
-            for data in json_data:
-                question, answer = self.qa_template(data)
-                list_data_dict.append(
-                    {
-                        "task_type": k,
-                        "video": os.path.join(self.data_path, v[1], data["video"]),
-                        "video_name": data["video"],
-                        "question": data["question"],
-                        "prompt": question,
-                        "answer": answer,
-                    }
-                )
-
         # pyre-fixme[4]: Attribute must be annotated.
-        self.data = list_data_dict
+        self.data = json.load(open(data_path, "r"))
 
     def __len__(self) -> int:
         return len(self.data)
-
-    # pyre-fixme[3]: Return type must be annotated.
-    # pyre-fixme[2]: Parameter must be annotated.
-    def qa_template(self, data):
-        question = f"Question: {data['question']}\n"
-        question += "Options:\n"
-        answer = data["answer"]
-        answer_idx = -1
-        for idx, c in enumerate(data["candidates"]):
-            question += f"({chr(ord('A') + idx)}) {c}\n"
-            if c == answer:
-                answer_idx = idx
-        question += (
-            "Respond with only the letter (A, B, C or D) of the correct option.\n"
-        )
-        question = question.rstrip()
-        answer = f"{chr(ord('A') + answer_idx)}"
-        return question, answer
 
     # pyre-fixme[3]: Return type must be annotated.
     def __iter__(self):
@@ -137,8 +83,7 @@ def train(args) -> None:
         model_name,
         device_map=None,
     )
-    model.get_model().config.dino_threshold = 0.82
-    model.get_model().config.drop_threshold = 0.77
+    model.get_model().config.drop_threshold = 0.8
     model.config.use_cache = True
     model.cuda()
     dataset = EvalDataset(
@@ -157,15 +102,34 @@ def train(args) -> None:
     output = []
     final_output = [None] * world_size
 
+    video_formats = [".mp4", ".avi", ".mov", ".mkv"]
+
     for line in tqdm(shard_dataset):
-        video_name = line["video_name"]
-        answer = line["answer"]
-        qs = line["prompt"]
-        task_type = line["task_type"]
+        video_name = line["google_drive_id"]
+        idx = line["q_uid"]
+        question = line["question"]
+        a0 = line["option 0"]
+        a1 = line["option 1"]
+        a2 = line["option 2"]
+        a3 = line["option 3"]
+        a4 = line["option 4"]
+        qs = f"Question: {question}\nOptions:\n(A) {a0}\n(B) {a1}\n(C) {a2}\n(D) {a3}\n(E) {a4}\nRespond with only the letter (A, B, C, D or E) of the correct option."
         video_path = os.path.join(
+            # pyre-fixme[16]: `DataClass` has no attribute `image_folder`.
             args.data_path,
-            line["video"],
+            "good_clips_git",
+            f"{idx}.mp4",
         )
+        for fmt in video_formats:
+            temp_path = os.path.join(
+                # pyre-fixme[16]: `DataClass` has no attribute `image_folder`.
+                args.data_path,
+                "good_clips_git",
+                f"{idx}{fmt}",
+            )
+            if os.path.exists(temp_path):
+                video_path = temp_path
+                break
 
         if os.path.exists(video_path):
             vr = VideoReader(video_path, ctx=cpu(0))
@@ -242,9 +206,8 @@ def train(args) -> None:
             pred = pred.strip()
         pred = pred.replace("Answer", "")
 
-        letters = ["A", "B", "C", "D"]
-
-        pred_answer = re.findall("[\(\ \[]*([A-D])[\)\.\ \]]*", pred)
+        letters = ["A", "B", "C", "D", "E"]
+        pred_answer = re.findall("[\(\ ]*[A-E][\)\ ]*", pred)
 
         pred_answer = pred_answer[0].strip()
         pred_answer = pred_answer.strip("()")
@@ -259,11 +222,9 @@ def train(args) -> None:
         ans_id = uuid.uuid4()
         output.append(
             {
-                "question": line["question"],
+                "idx": idx,
                 "prompt": qs,
-                "answer": answer,
-                "pred": pred,
-                "task_type": task_type,
+                "pred": pred_idx,
                 "answer_id": str(ans_id),
                 "model_id": model_name,
                 "video_name": video_name,
@@ -291,34 +252,44 @@ def train(args) -> None:
         ) as f:
             json.dump(all_output, f)
 
+        answers = json.load(
+                open(
+                    os.path.join(
+                        args.data_path, "subset_answers.json"
+                    ),
+                    "r",
+                )
+            )
+
         correct = 0
         total = 0
-        acc_dict = {}
         for output in all_output:
-            pred = output["pred"]
-            gt = output["answer"]
-            task_type = output["task_type"]
-            if task_type not in acc_dict:
-                acc_dict[task_type] = [0, 0]
-            acc_dict[task_type][1] += 1
-            total += 1
+            if output["idx"] in answers:
+                total += 1
+                if int(output["pred"]) == int(answers[output["idx"]]):
+                    correct += 1
 
-            if pred == gt:
-                acc_dict[task_type][0] += 1
-                correct += 1
-
-        final_res = dict()
-        total = 0
-        idx = 0
-        for k, v in acc_dict.items():
-            idx += 1
-            final_res[k] = v[0] / v[1] * 100
-            total += final_res[k]
-        final_res["Acc"] = total / idx
-        print(final_res, flush=True)
+        print(f"Accuracy: {correct / total}")
+        result = {"acc": correct / total}
 
         with open(os.path.join("/tmp/generated_text", "result.json"), "w") as f:
-            json.dump(final_res, f)
+            json.dump(result, f)
+
+        submission = []
+        q_uids = []
+        for output in all_output:
+            item = {}
+            item["q_uid"] = output["idx"]
+            item["answer"] = int(output["pred"])
+            if output["idx"] not in q_uids:
+                q_uids.append(output["idx"])
+                submission.append(item)
+        df = pd.DataFrame(submission)
+        df.to_csv(
+            "/tmp/generated_text/submission.csv",
+            index=False,
+            columns=["q_uid", "answer"],
+        )
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
