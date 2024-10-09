@@ -16,7 +16,7 @@ Download [EgoSchema](https://github.com/egoschema/EgoSchema) to `./data/EgoSchem
 python -m torch.distributed.launch --nproc-per-node=8 eval/eval_egoschema.py --data_path ./data/EgoSchema --version qwen --model_path ./checkpoints/longvu_qwen
 ```
 
-Submit the result file `.csv` to [Kaggle](https://www.kaggle.com/competitions/egoschema-public/submissions)
+Then submit the result file `.csv` to [Kaggle](https://www.kaggle.com/competitions/egoschema-public/submissions)
 
 
 ## MLVU
