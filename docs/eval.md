@@ -1,5 +1,9 @@
 # Evaluation
 
+To reproduce the results, please download our checkpoints to `./checkpoints`
++ LongVU_Qwen2-7B: [checkpoint]()
++ LongVU_Llama3_2-3B: [checkpoint]()
+
 ## MVBench
 
 Download [MVBench](https://huggingface.co/datasets/OpenGVLab/MVBench) to `./data/MVBench`
