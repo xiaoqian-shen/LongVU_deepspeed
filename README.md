@@ -4,6 +4,10 @@
 >
 > <a href=''><img src='https://img.shields.io/badge/arXiv-paper-red'></a> <a href='https://vision-cair.github.io/LongVU'><img src='https://img.shields.io/badge/project-LongVU-blue'></a> <a href='https://huggingface.co/spaces/Vision-CAIR/LongVU'><img src='https://img.shields.io/badge/demo-space-blue'></a> <a href='https://huggingface.co/Vision-CAIR/LongVU_Qwen2_7B'><img src='https://img.shields.io/badge/model-checkpoints-yellow'></a> 
 
+<div align="center">
+    <img src="https://longvu.s3.amazonaws.com/assets/demo.gif" alt="Demo GIF" style="width: 100%; max-width: 650px;">
+</div>
+
 ## :rocket: Quick Start
 
 Try our model on [🤗 Space](https://huggingface.co/spaces/Vision-CAIR/LongVU)
