@@ -33,8 +33,6 @@ See quick inference code in [inference.md](https://github.com/xiaoqian-shen/Long
 
 Experiments are run on 64 H100-96G
 
-Training code is under policy review. Stay tuned ...
-
 ## Evaluation
 
 See detailed evaluation code in [eval.md](https://github.com/xiaoqian-shen/LongVU/blob/main/docs/eval.md)
