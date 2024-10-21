@@ -25,9 +25,19 @@ from longvu.mm_datautils import (
 from decord import cpu, VideoReader
 
 
-title_markdown = ("""
-LongVU
-""")
+title_markdown = """
+<div style="display: flex; justify-content: center; align-items: center; text-align: center;">
+  <div>
+    <h1 >LongVU: Spatiotemporal Adaptive Compression for Long Video-Language Understanding</h1>
+  </div>
+</div>
+<div align="center">
+    <div style="display:flex; gap: 0.25rem; margin-top: 10px;" align="center">
+        <a href='https://vision-cair.github.io/LongVU/'><img src='https://img.shields.io/badge/Project-LongVU-blue'></a>
+        <a href='https://huggingface.co/Vision-CAIR/LongVU_Qwen2_7B'><img src='https://img.shields.io/badge/model-checkpoints-yellow'></a>
+    </div>
+</div>
+"""
 
 block_css = """
 #buttons button {
@@ -123,6 +133,16 @@ class Chat:
 
 # @spaces.GPU(duration=120)
 def generate(image, video, message, chatbot, textbox_in, temperature, top_p, max_output_tokens, dtype=torch.float16):
+    if textbox_in is None:
+        raise gr.Error("Chat messages cannot be empty")
+        return (
+            gr.update(value=image, interactive=True),
+            gr.update(value=video, interactive=True),
+            message,
+            chatbot,
+            None,
+        )
+    
     data = []
 
     processor = handler.processor
@@ -157,7 +177,7 @@ def generate(image, video, message, chatbot, textbox_in, temperature, top_p, max
             raise NotImplementedError("Not support image and video at the same time")
     except Exception as e:
         traceback.print_exc()
-        return gr.update(value=None, interactive=True), gr.update(value=None, interactive=True), message, chatbot
+        return gr.update(value=None, interactive=True), gr.update(value=None, interactive=True), message, chatbot, None
 
     assert len(message) % 2 == 0, "The message should be a pair of user and system message."
 
@@ -202,7 +222,7 @@ def generate(image, video, message, chatbot, textbox_in, temperature, top_p, max
     one_turn_chat[1] = text_en_out
     chatbot.append(one_turn_chat)
 
-    return gr.update(value=image, interactive=True), gr.update(value=video, interactive=True), message, chatbot
+    return gr.update(value=image, interactive=True), gr.update(value=video, interactive=True), message, chatbot, None
 
 
 def regenerate(message, chatbot):
@@ -285,13 +305,17 @@ with gr.Blocks(title='LongVU', theme=theme, css=block_css) as demo:
             gr.Examples(
                 examples=[
                     [
+                        f"./examples/video3.mp4",
+                        "What is the moving direction of the yellow ball?",
+                    ],
+                    [
                         f"./examples/video1.mp4",
                         "Describe this video in detail.",
                     ],
                     [
                         f"./examples/video2.mp4",
-                        "Which country does the boy in the video probably come from?",
-                    ]
+                        "What is the name of the store?",
+                    ],
                 ],
                 inputs=[video, textbox],
             )
@@ -307,8 +331,23 @@ with gr.Blocks(title='LongVU', theme=theme, css=block_css) as demo:
         [message, chatbot]).then(
         generate, 
         [image, video, message, chatbot, textbox, temperature, top_p, max_output_tokens], 
-        [image, video, message, chatbot])
+        [image, video, message, chatbot, textbox])
 
+    textbox.submit(
+        generate,
+        [
+            image,
+            video,
+            message,
+            chatbot,
+            textbox,
+            temperature,
+            top_p,
+            max_output_tokens,
+        ],
+        [image, video, message, chatbot, textbox],
+    )
+    
     clear_btn.click(
         clear_history, 
         [message, chatbot],
