@@ -2,7 +2,7 @@
 
 Below is a quick inference code:
 
-```
+```python
 import numpy as np
 import torch
 from longvu.builder import load_pretrained_model
