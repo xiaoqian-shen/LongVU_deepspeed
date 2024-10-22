@@ -10,7 +10,7 @@
 
 ## :rocket: Quick Start
 
-Try our model on [🤗 Space](https://huggingface.co/spaces/Vision-CAIR/LongVU)
+Try our model on [HF 🤗 Demo](https://huggingface.co/spaces/Vision-CAIR/LongVU)
 
 Or demploy from local
 
