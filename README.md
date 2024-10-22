@@ -25,7 +25,6 @@ Download our checkpoints and put it under `./checkpoints`
 | Modality | LongVU_Qwen2_7B | LongVU_Llama3_2_3B |
 :--------------------------:| :--------------------------:|:--------------------------:
 | Image | [Download]() | [Download]() |
-:--------------------------:| :--------------------------:|:--------------------------:
 | Video | [Download](https://huggingface.co/Vision-CAIR/LongVU_Qwen2_7B) | [Download](https://huggingface.co/Vision-CAIR/LongVU_Llama3_2_3B) |
 
 See quick inference code in [inference.md](https://github.com/xiaoqian-shen/LongVU/blob/main/docs/inference.md)
