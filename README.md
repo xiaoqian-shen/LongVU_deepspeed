@@ -104,7 +104,10 @@ pred = tokenizer.batch_decode(output_ids, skip_special_tokens=True)[0].strip()
 Experiments are run on 64 H100-96G
 
 ```
-# download data to specific path, then run
+# image sft
+sh scripts/train_image_qwen.sh
+sh scripts/train_image_llama3_2.sh
+# video sft
 sh scripts/train_video_qwen.sh
 sh scripts/train_video_llama3_2.sh
 ```
