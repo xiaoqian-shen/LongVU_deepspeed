@@ -60,9 +60,9 @@ See detailed evaluation code in [eval.md](https://github.com/Vision-CAIR/LongVU/
 
 ```
 @article{shen2024longvu,
-  author    = {Shen, Xiaoqian and Xiong, Yunyang and Zhao, Changsheng and Wu, Lemeng and Chen, Jun and Zhu, Chenchen and Liu, Zechun and Xiao, Fanyi and Varadarajan, Balakrishnan and Bordes, Florian and Liu, Zhuang and Xu, Hu and J. Kim, Hyunwoo and Soran, Bilge and Krishnamoorthi, Raghuraman and Elhoseiny, Mohamed and Chandra, Vikas},
-  title     = {LongVU: Spatiotemporal Adaptive Compression for Long Video-Language Understanding},
-  journal   = {arXiv preprint arXiv:2410},
-  year      = {2024},
+  author ={Shen, Xiaoqian and Xiong, Yunyang and Zhao, Changsheng and Wu, Lemeng and Chen, Jun and Zhu, Chenchen and Liu, Zechun and Xiao, Fanyi and Varadarajan, Balakrishnan and Bordes, Florian and Liu, Zhuang and Xu, Hu and J. Kim, Hyunwoo and Soran, Bilge and Krishnamoorthi, Raghuraman and Elhoseiny, Mohamed and Chandra, Vikas},
+  title = {LongVU: Spatiotemporal Adaptive Compression for Long Video-Language Understanding},
+  journal = {arXiv preprint arXiv:2410},
+  year = {2024},
 }
 ```
