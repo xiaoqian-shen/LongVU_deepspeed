@@ -7,7 +7,7 @@ VERSION="qwen"
 
 CUDA_LAUNCH_BLOCKING=1 TORCH_DISTRIBUTED_DEBUG=DETAIL torchrun --nproc_per_node=8 --nnodes=8 \
 longvu/train.py \
---output_dir "/tmp/llama/" \
+--output_dir "/tmp/longvu/" \
 --input_model_filename $PREV_STAGE_CHECKPOINT \
 --output_model_filename "./checkpoints/${exp}/" \
 --data_path $PATH_TO_JSON \
