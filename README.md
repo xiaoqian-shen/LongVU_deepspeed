@@ -34,7 +34,7 @@ See quick inference code in [inference.md](https://github.com/xiaoqian-shen/Long
 ### Scripts
 
 ```
-download data to specific path, the run
+# download data to specific path, then run
 sh scripts/train_video_qwen.sh
 ```
 
