@@ -24,10 +24,10 @@ Download our checkpoints and put it under `./checkpoints`
 
 | Modality | LongVU_Qwen2_7B | LongVU_Llama3_2_3B |
 :--------------------------:| :--------------------------:|:--------------------------:
-| Image | [Download]() | [Download]() |
+| Image | [Download](https://huggingface.co/Vision-CAIR/LongVU_Qwen2_7B_img) | [Download](https://huggingface.co/Vision-CAIR/LongVU_Llama3_2_3B_img) |
 | Video | [Download](https://huggingface.co/Vision-CAIR/LongVU_Qwen2_7B) | [Download](https://huggingface.co/Vision-CAIR/LongVU_Llama3_2_3B) |
 
-See quick inference code in [inference.md](https://github.com/xiaoqian-shen/LongVU/blob/main/docs/inference.md)
+See quick inference code in [inference.md](https://github.com/Vision-CAIR/LongVU/blob/main/docs/inference.md)
 
 ## Training
 
@@ -48,7 +48,7 @@ sh scripts/train_video_llama3_2.sh
 
 ## Evaluation
 
-See detailed evaluation code in [eval.md](https://github.com/xiaoqian-shen/LongVU/blob/main/docs/eval.md)
+See detailed evaluation code in [eval.md](https://github.com/Vision-CAIR/LongVU/blob/main/docs/eval.md)
 
 ## Acknowledgement
 
