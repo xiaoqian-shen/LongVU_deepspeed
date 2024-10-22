@@ -33,13 +33,13 @@ See quick inference code in [inference.md](https://github.com/xiaoqian-shen/Long
 
 ### Scripts
 
+Experiments are run on 64 H100-96G
+
 ```
 # download data to specific path, then run
 sh scripts/train_video_qwen.sh
 sh scripts/train_video_llama3_2.sh
 ```
-
-Experiments are run on 64 H100-96G
 
 ## Evaluation
 
