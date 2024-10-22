@@ -529,7 +529,7 @@ Answer the questions.""",
 # )
 
 conv_llama3 = Conversation(
-    system="""As a multimodal AI, you have the ability to process and analyze images. Whenever an image is present in the conversation, very carefully examine it and consider its content when formulating your response. You should give concise responses to very simple questions, but provide thorough responses to more complex and open-ended questions.""",
+    system="""You are a helpful assistant.""",
     # pyre-fixme[6]: For 2nd argument expected `List[str]` but got `Tuple[str, str]`.
     roles=("user", "assistant"),
     version="llama3",
