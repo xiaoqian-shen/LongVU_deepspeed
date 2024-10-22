@@ -24,8 +24,6 @@ Download our checkpoints [LongVU_Qwen2_7B](https://huggingface.co/Vision-CAIR/Lo
 
 See quick inference code in [inference.md](https://github.com/xiaoqian-shen/LongVU/blob/main/docs/inference.md)
 
-
-
 ## Training
 
 ### Dataset
@@ -34,6 +32,11 @@ See quick inference code in [inference.md](https://github.com/xiaoqian-shen/Long
 + video-text stage: [VideoChat2-IT](https://huggingface.co/datasets/OpenGVLab/VideoChat2-IT)
 
 ### Scripts
+
+```
+download data to specific path, the run
+sh scripts/train_video_qwen.sh
+```
 
 Experiments are run on 64 H100-96G
 
