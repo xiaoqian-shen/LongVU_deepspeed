@@ -28,7 +28,7 @@ Download our checkpoints and put it under `./checkpoints`
 | Video | [Download](https://huggingface.co/Vision-CAIR/LongVU_Qwen2_7B) | [Download](https://huggingface.co/Vision-CAIR/LongVU_Llama3_2_3B) |
 
 <details>
-  <summary>See quick inference code</summary>
+  <summary>Click for quick inference code</summary>
     
 ```python
 import numpy as np
