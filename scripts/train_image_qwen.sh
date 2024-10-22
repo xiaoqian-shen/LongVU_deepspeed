@@ -8,7 +8,7 @@ CUDA_LAUNCH_BLOCKING=1 TORCH_DISTRIBUTED_DEBUG=DETAIL torchrun --nproc_per_node=
 longvu/train.py \
 --output_dir "/tmp/longvu/" \
 --input_model_filename $BASE_CHECKPOINT \
---output_model_filename "./checkpoints/longvu_qwen/" \
+--output_model_filename "./checkpoints/cambrian_qwen/" \
 --data_path $PATH_TO_JSON \
 --image_folder $PATH_TO_FOLDER \
 --model_max_length 4096 \
