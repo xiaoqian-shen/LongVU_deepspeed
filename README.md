@@ -107,6 +107,10 @@ pred = tokenizer.batch_decode(output_ids, skip_special_tokens=True)[0].strip()
 
 Experiments are run on 64 H100-96G
 
+Download [image_json_file](https://huggingface.co/datasets/shenxq/OneVision/blob/main/onevision.json) and [video_json_file](https://huggingface.co/datasets/shenxq/VideoChat2/blob/main/train_video_data.json).
+
+We also provide [row_video_data](https://huggingface.co/datasets/shenxq/VideoChat2) for easy downloading.
+
 Modify the PATH_TO_JSON and PATH_TO_FOLDER arguments in the training scripts to your save folder.
 
 ```
