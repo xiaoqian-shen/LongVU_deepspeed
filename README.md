@@ -107,10 +107,24 @@ pred = tokenizer.batch_decode(output_ids, skip_special_tokens=True)[0].strip()
 
 Experiments are run on 64 H100-96G
 
+Modify the PATH_TO_JSON and PATH_TO_FOLDER arguments in the training scripts to your save folder.
+
+```
+PATH_TO_JSON=""
+PATH_TO_FOLDER=""
+```
+Training your own model
 ```
 # image sft
 sh scripts/train_image_qwen.sh
 sh scripts/train_image_llama3_2.sh
+```
+
+Modify PREV_STAGE_CHECKPOINT in the training scripts to your first stage model path
+
+Change `image_token_len` and `query_num_list` in config.json to 144
+
+```
 # video sft
 sh scripts/train_video_qwen.sh
 sh scripts/train_video_llama3_2.sh
