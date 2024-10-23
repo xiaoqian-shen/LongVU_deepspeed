@@ -11,7 +11,7 @@ longvu/train.py \
 --output_model_filename "./checkpoints/cambrian_llama3_2/" \
 --data_path $PATH_TO_JSON \
 --image_folder $PATH_TO_FOLDER \
---model_max_length 4096 \
+--model_max_length 8192 \
 --fp16 False \
 --bf16 True \
 --log_on_each_node False \
