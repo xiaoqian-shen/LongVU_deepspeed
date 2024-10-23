@@ -15,6 +15,8 @@ Try our model on [HF 🤗 Demo](https://huggingface.co/spaces/Vision-CAIR/LongVU
 Or demploy from local
 
 ```
+git clone https://github.com/Vision-CAIR/LongVU
+cd LongVU
 conda create -n longvu python=3.10
 conda activate longvu
 pip install -r requirements.txt
