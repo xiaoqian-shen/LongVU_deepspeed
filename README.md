@@ -27,6 +27,8 @@ Download our checkpoints and put it under `./checkpoints`
 | Image | [Download](https://huggingface.co/Vision-CAIR/LongVU_Qwen2_7B_img) | [Download](https://huggingface.co/Vision-CAIR/LongVU_Llama3_2_3B_img) |
 | Video | [Download](https://huggingface.co/Vision-CAIR/LongVU_Qwen2_7B) | [Download](https://huggingface.co/Vision-CAIR/LongVU_Llama3_2_3B) |
 
+Run demo `python app.py` locally with minimum 40G GPU.
+
 <details>
   <summary>Click for quick inference code</summary>
     
