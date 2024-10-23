@@ -126,7 +126,7 @@ sh scripts/train_image_llama3_2.sh
 
 Modify PREV_STAGE_CHECKPOINT in the training scripts to your first stage model path
 
-Change `image_token_len` and `query_num_list` in config.json to 144
+Change `image_token_len` and `query_num_list` in `config.json` to 144
 
 ```
 # video sft
