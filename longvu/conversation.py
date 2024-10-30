@@ -465,11 +465,9 @@ Answer the questions.""",
     sep="<|im_end|>",
 )
 
-# llama3_tokenizer = AutoTokenizer.from_pretrained(
-#     PathManager.get_local_path(
-#         "./checkpoint/"
-#     )
-# )
+llama3_tokenizer = AutoTokenizer.from_pretrained(
+    "Vision-CAIR/LongVU_Llama3_2_3B"
+)
 
 conv_llama3 = Conversation(
     system="""You are a helpful assistant.""",
@@ -480,7 +478,7 @@ conv_llama3 = Conversation(
     messages=(),
     offset=0,
     sep_style=SeparatorStyle.LLAMA_3,
-    # tokenizer=llama3_tokenizer,
+    tokenizer=llama3_tokenizer,
     sep="<|eot_id|>",
 )
 
