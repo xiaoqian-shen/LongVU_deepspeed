@@ -1464,12 +1464,6 @@ class CambrianMetaForCausalLM(ABC):
                     image_features[cur_image_idx].shape[-1],
                 )
 
-                sim = F.cosine_similarity(
-                    visual_emb_frame[:-1],
-                    visual_emb_frame[1:],
-                    dim=-1,
-                )
-
                 new_visual_emb_frames = []
                 for start_idx in range(0, len(visual_emb_frame), 8):
                     end_idx = min(start_idx + 8, len(visual_emb_frame))
