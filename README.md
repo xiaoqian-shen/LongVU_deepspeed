@@ -96,6 +96,8 @@ pred = tokenizer.batch_decode(output_ids, skip_special_tokens=True)[0].strip()
     
 </details>
 
+Thanks the detailed instruction [(here)](https://github.com/Vision-CAIR/LongVU/issues/6) from @ipeevski for developing on Windows system with 24GB VRAM.
+
 ## Training
 
 ### Dataset
