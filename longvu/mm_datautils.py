@@ -114,6 +114,10 @@ def safe_save_model_for_hf_trainer(
 
     for key in cpu_state_dict.keys():
         cpu_state_dict[key] = cpu_state_dict[key].to(torch.bfloat16)
+    
+    if trainer.deepspeed:
+        trainer.save_model(output_dir)
+        return
 
     if global_rank == 0:
         trainer.model.config.save_pretrained(output_dir)
