@@ -1,7 +1,7 @@
 
 PREV_STAGE_CHECKPOINT="./checkpoints/cambrian_qwen_7b"
 PATH_TO_JSON="/home/shenx/videos/LongVU/data.json"
-PATH_TO_FOLDER="/home/shenx/evaluation/mlvu"
+PATH_TO_FOLDER="./mlvu"
 VERSION="qwen"
 
 CUDA_VISIBLE_DEVICE=3 CUDA_LAUNCH_BLOCKING=4 TORCH_DISTRIBUTED_DEBUG=DETAIL torchrun --nproc_per_node=1 --nnodes=1 \
