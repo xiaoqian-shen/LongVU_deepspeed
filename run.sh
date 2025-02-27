@@ -1,5 +1,5 @@
 
-PREV_STAGE_CHECKPOINT="/home/shenx/videos/LongVU/checkpoints/cambrian_qwen_7b"
+PREV_STAGE_CHECKPOINT="./checkpoints/cambrian_qwen_7b"
 PATH_TO_JSON="/home/shenx/videos/LongVU/data.json"
 PATH_TO_FOLDER="/home/shenx/evaluation/mlvu"
 VERSION="qwen"
