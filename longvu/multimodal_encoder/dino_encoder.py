@@ -5,6 +5,8 @@ from transformers import AutoImageProcessor, Dinov2Config, Dinov2Model
 
 from .base_encoder import BaseVisionTower, ProcessorWrapper
 
+import deepspeed 
+from .utils import z3_params_to_fetch
 
 class DinoVisionTower(BaseVisionTower):
     def __init__(self, vision_tower, args, delay_load=False):
@@ -109,9 +111,15 @@ class DinoVisionTower(BaseVisionTower):
     def _forward(self, images):
         # logger.warning(f"images shape: {images.shape}")
         with torch.set_grad_enabled(self.unfreeze_mm_vision_tower):
-            image_forward_outs = self.vision_tower.forward(
-                images.to(device=self.device, dtype=self.dtype)
-            )
+            # image_forward_outs = self.vision_tower.forward(
+            #     images.to(device=self.device, dtype=self.dtype)
+            # )
+            params_to_fetch = z3_params_to_fetch(self.vision_tower.parameters())
+            should_gather_params = len(params_to_fetch) > 0 
+            with deepspeed.zero.GatheredParameters(params_to_fetch, enabled=should_gather_params):
+                image_forward_outs = self.vision_tower.forward(
+                    images.to(device=self.device, dtype=self.dtype)
+                )
             # logger.warning(f"image_forward_outs shape: {image_forward_outs['last_hidden_state'].shape}")
             image_features = self.feature_select(image_forward_outs).to(images.dtype)
             # logger.warning(f"image_features shape: {image_features.shape}")

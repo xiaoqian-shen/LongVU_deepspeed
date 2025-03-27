@@ -5,6 +5,8 @@ from transformers import SiglipImageProcessor, SiglipVisionConfig, SiglipVisionM
 
 from .base_encoder import BaseVisionTower, ProcessorWrapper
 
+import deepspeed 
+from .utils import z3_params_to_fetch
 
 class SiglipVisionTower(BaseVisionTower):
     def __init__(self, vision_tower_name, args, delay_load=False):
@@ -70,9 +72,16 @@ class SiglipVisionTower(BaseVisionTower):
 
     def _forward(self, images, interpolate_token=576):
         with torch.set_grad_enabled(self.unfreeze_mm_vision_tower):
-            image_features = self.vision_tower.forward(
-                images.to(device=self.device, dtype=self.dtype),
-                output_hidden_states=True,
-            ).hidden_states[-1]
+            # image_features = self.vision_tower.forward(
+            #     images.to(device=self.device, dtype=self.dtype),
+            #     output_hidden_states=True,
+            # ).hidden_states[-1]
+            params_to_fetch = z3_params_to_fetch(self.vision_tower.parameters())
+            should_gather_params = len(params_to_fetch) > 0 
+            with deepspeed.zero.GatheredParameters(params_to_fetch, enabled=should_gather_params):
+                image_features = self.vision_tower.forward(
+                    images.to(device=self.device, dtype=self.dtype),
+                    output_hidden_states=True,
+                ).hidden_states[-1]
             interp_features = self.interpolate(image_features)
             return interp_features

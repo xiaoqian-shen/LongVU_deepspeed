@@ -21,6 +21,8 @@ import cv2
 import numpy as np
 import torch
 
+import deepspeed
+from deepspeed.runtime.zero.partition_parameters import ZeroParamStatus
 
 def init_cross_conv(blocks):
     """Initialize convolutional cross attention."""
@@ -64,3 +66,9 @@ def resize_pos_embed(weight, out_len):
     ]
     out_weight = np.concatenate(out_weight, axis=-1)
     return out_weight.reshape((-1, weight.shape[-1])).astype(weight.dtype, copy=False)
+
+def z3_params_to_fetch(param_list):
+    return [
+        p for p in param_list
+        if hasattr(p, 'ds_id') and p.ds_status == ZeroParamStatus.NOT_AVAILABLE
+    ]
