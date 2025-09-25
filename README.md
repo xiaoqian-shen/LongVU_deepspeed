@@ -5,7 +5,8 @@ Please download [LongVU_Qwen2_7B](https://huggingface.co/Vision-CAIR/LongVU_Qwen
 git clone https://huggingface.co/Vision-CAIR/LongVU_Qwen2_7B
 ```
 
-Download example data to ./mlvu for debuging (Please use `huggingface-cli login` if encountered `Authentication Failed`)
+Download example data to ./mlvu for debuging 
+(Please use `huggingface-cli login` if encountered `Authentication Failed`)
 
 ```
 from huggingface_hub import list_repo_files, hf_hub_download
