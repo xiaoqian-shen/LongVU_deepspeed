@@ -14,7 +14,7 @@ from huggingface_hub import list_repo_files, hf_hub_download
 import json
 repo_id = "MLVU/MVLU"
 subfolder = "MLVU/video/1_plotQA"
-local_dir = f"./mlvu/{subfolder}"
+local_dir = f"./mlvu/MLVU"
 os.makedirs(local_dir, exist_ok=True)
 
 files = list_repo_files(repo_id=repo_id, repo_type="dataset")
