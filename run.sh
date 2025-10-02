@@ -1,6 +1,6 @@
 
 PREV_STAGE_CHECKPOINT="./checkpoints/cambrian_qwen_7b"
-PATH_TO_JSON="./data.json"
+PATH_TO_JSON="./data_small.json"
 PATH_TO_FOLDER="./mlvu/MLVU"
 VERSION="qwen"
 
