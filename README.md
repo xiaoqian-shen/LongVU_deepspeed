@@ -25,7 +25,7 @@ for file_path in subfolder_files:
         repo_id=repo_id,
         filename=file_path,
         repo_type="dataset",
-        local_dir="./data",
+        local_dir=local_dir,
         local_dir_use_symlinks=False
     )
 ```
